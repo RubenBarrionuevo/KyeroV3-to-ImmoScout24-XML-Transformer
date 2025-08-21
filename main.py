@@ -1,10 +1,8 @@
 from transformer import transformar_xml
-from sender import enviar_xml
 from utils import dict_a_xml
 from lxml import etree
 import logging
 import os
-import time
 
 # Ruta del archivo log
 log_file = os.path.join(os.path.dirname(__file__), 'app.log')
@@ -58,31 +56,20 @@ def main():
                 with open(ruta_salida, 'wb') as f:
                     f.write(xml_transformado.encode('utf-8'))
                 logger.info(f"XML guardado en {ruta_salida}")
-                generated_properties += 1
+
+                # Log del XML generado para depuración
+                logger.debug(f"XML generado para {external_id}:\n{xml_transformado}")
 
                 # Validar XML antes de enviarlo
                 try:
-                    etree.fromstring(xml_transformado)
+                    etree.fromstring(xml_transformado.encode('utf-8'))
                     logger.debug(f"XML válido para {external_id}")
+                    generated_properties += 1
                 except etree.XMLSyntaxError as e:
                     logger.error(f"XML inválido para {external_id}: {str(e)}")
                     print(f"XML inválido para {external_id}: {str(e)}")
                     continue
-
-                # Enviar XML
-                try:
-                    #respuesta = enviar_xml(xml_transformado)
-                    logger.info(f"Propiedad {external_id} - Código de respuesta: {respuesta.status_code}")
-                    logger.info(f"Propiedad {external_id} - Respuesta: {respuesta.text}")
-                    print(f"Propiedad {external_id} - Código de respuesta: {respuesta.status_code}")
-                    print(f"Propiedad {external_id} - Respuesta: {respuesta.text}")
-                    sent_properties += 1
-                except Exception as e:
-                    logger.error(f"Error al enviar XML para {external_id}: {str(e)}")
-                    print(f"Error al enviar XML para {external_id}: {str(e)}")
-                
-                # Retraso para evitar límites de la API
-                time.sleep(1)
+            
             else:
                 logger.warning(f"Propiedad {external_id} omitida por tipo no válido.")
                 print(f"Propiedad {external_id} omitida por tipo no válido.")
